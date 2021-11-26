@@ -1,0 +1,15 @@
+{
+  "name": "at4net/bunnycdn_utils",
+  "description": "Utilities for Bunny CDN management",
+  "minimum-stability": "stable",
+  "license": "cc",
+  "authors": [
+    {
+      "name": "Antonio Marí",
+      "email": "amari@at4.net"
+    }
+  ],
+  "require": {
+    "guzzlehttp/guzzle": "*"
+  }
+}
