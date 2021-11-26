@@ -9,7 +9,21 @@
       "email": "amari@at4.net"
     }
   ],
+  "autoload": {
+    "psr-4": {
+      "App\\": "src"
+    },
+    "files": ["app/AppKernel.php"]
+  },
   "require": {
-    "guzzlehttp/guzzle": "*"
+    "guzzlehttp/guzzle": "*",
+    "symfony/console": "*",
+    "symfony/config": "*",
+    "symfony/dependency-injection": "*",
+    "symfony/yaml": "*",
+    "symfony/http-kernel": "*",
+    "symfony/filesystem": "*",
+    "php": ">=7.4",
+    "defuse/php-encryption": "*"
   }
 }

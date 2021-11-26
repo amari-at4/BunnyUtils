@@ -1,0 +1,20 @@
+#!/usr/bin/env php
+<?php
+
+use App\AppKernel;
+use Symfony\Component\Console\Application;
+
+require_once __DIR__ . '/../vendor/autoload.php';
+
+$kernel = new AppKernel($_ENV['APP_ENV'] ?? 'prod', $_ENV['APP_DEBUG'] ?? false);
+$kernel->boot();
+
+$container = $kernel->getContainer();
+$application = $container->get(Application::class);
+// Run it
+try {
+    $application->run();
+} catch( Exception $e ) {
+    echo sprintf("An error has occurred '%s'", $e->getMessage());
+    exit(1);
+}
