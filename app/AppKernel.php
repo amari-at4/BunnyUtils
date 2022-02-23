@@ -17,7 +17,7 @@ class AppKernel extends Kernel
     /**
      * @inheritDoc
      */
-    public function registerBundles()
+    public function registerBundles(): iterable
     {
         return [];
     }

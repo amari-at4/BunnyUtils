@@ -23,7 +23,12 @@
     "symfony/yaml": "*",
     "symfony/http-kernel": "*",
     "symfony/filesystem": "*",
-    "php": ">=7.4",
-    "defuse/php-encryption": "*"
+    "symfony/serializer-pack": "*",
+    "symfony/serializer": "*",
+    "sensio/framework-extra-bundle": "*",
+    "php": ">=8.0",
+    "defuse/php-encryption": "*",
+    "ext-json": "*",
+    "elao/enum": "*"
   }
 }

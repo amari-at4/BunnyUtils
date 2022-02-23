@@ -1,0 +1,2 @@
+# sh always lf ending
+*.sh text=auto eol=lf

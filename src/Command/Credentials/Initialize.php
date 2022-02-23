@@ -3,27 +3,33 @@
 namespace App\Command\Credentials;
 
 use Defuse\Crypto\Exception\EnvironmentIsBrokenException;
+use Exception;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
+use Symfony\Component\Console\Question\Question;
 
 class Initialize extends Base
 {
     protected static $defaultName = 'credentials:initialize';
 
-    private OutputInterface $output;
-
     protected function configure(): void
     {
         $this
-            ->setHelp('With this command you can add new Bunny credentials')
+            ->setHelp('Initialize key to crypt Bunny accounts')
             ->addOption(
                 'force',
                 'f',
                 InputOption::VALUE_NONE,
                 'If the key exists force to recreate, this operation is dangerous because the current encrypted credentials will be deleted'
+            )
+            ->addOption(
+                'crypt',
+                'c',
+                InputOption::VALUE_NONE,
+                'Crypt the key with an user password, the scripts can not run as unattended mode'
             )
         ;
     }
@@ -31,15 +37,15 @@ class Initialize extends Base
     /**
      * @throws EnvironmentIsBrokenException
      */
-    private function createNewKey()
+    private function createNewKey(?string $password = null)
     {
-        $this->encryptionHelper->createNewKeyFile();
+        $this->credentialsHelper->createNewKeyFile($password);
         $this
             ->output
             ->writeln(
                 sprintf(
                     '<info>Credentials key initialised at: %s</info>',
-                    $this->encryptionHelper->keyFile()
+                    $this->credentialsHelper->keyFile((bool) $password)
                 )
             );
     }
@@ -50,7 +56,7 @@ class Initialize extends Base
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $this->output = $output;
-        if( file_exists($this->encryptionHelper->keyFile()) ) {
+        if( file_exists($this->credentialsHelper->keyFile()) || file_exists($this->credentialsHelper->keyFile(true)) ) {
             if( ! $input->getOption('force') ) {
                 $output
                     ->writeln('<error>Key file exists use --force if you want to reinitialize all the database.  Take care about it because all current credentials will be deleted</error>');
@@ -65,10 +71,47 @@ class Initialize extends Base
                         ->writeln("<info>Ok. We don't delete current credentials</info>");
                     return Command::SUCCESS;
                 }
-                $this->encryptionHelper->removeCredentials();
+                $this->credentialsHelper->removeCredentials();
             }
         }
-        $this->createNewKey();
+        $password = null;
+        if( $input->getOption('crypt') ) {
+            $helper = $this->getHelper('question');
+
+            $question = new Question('Please enter user password');
+            $question
+                ->setHidden(true)
+                ->setHiddenFallback(false);
+            $question->setNormalizer(function ($value) {
+                // $value can be null here
+                return $value ? trim($value) : '';
+            });
+            $question->setValidator(function ($value) {
+                if( strlen(trim($value)) < 8 ) {
+                    throw new Exception('The password min length is 8');
+                }
+                return $value;
+            });
+            $question->setMaxAttempts(20);
+            $password = $helper->ask($input, $output, $question);
+            $question = new Question('Please re-enter user password');
+            $question
+                ->setHidden(true)
+                ->setHiddenFallback(false);
+            $question->setNormalizer(function ($value) {
+                // $value can be null here
+                return $value ? trim($value) : '';
+            });
+            $question->setValidator(function ($value) use ($password) {
+                if( trim($value) != $password ) {
+                    throw new Exception('Password mismatch');
+                }
+                return $value;
+            });
+            $question->setMaxAttempts(20);
+            $rePassword = $helper->ask($input, $output, $question);
+        }
+        $this->createNewKey($password);
         return Command::SUCCESS;
     }
 }
